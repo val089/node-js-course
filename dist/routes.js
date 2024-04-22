@@ -38,7 +38,7 @@ export const routes = (req, res) => {
         res.write('<head><title>Users</title><head>');
         res.write('<body><h1>Users</h1><ul><li>User 1</li><li>User 2</li><li>User 3</li></ul></body>');
         res.write('</html>');
-        return res.end();
+        return res.end(); // zapobiegamy wykonywaniu kodu dalej
     }
     if (url === '/create-user' && method === 'POST') {
         const body = [];
