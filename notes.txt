@@ -1,0 +1,7 @@
+// allows us to use middleware
+// use() will run for every incoming request; this function will receive three arguments: request, response, and next
+// app.use((req, res, next) => {
+//   console.log('In the middleware!');
+
+//   next(); // allows the request to continue to the next middleware in line
+// });
