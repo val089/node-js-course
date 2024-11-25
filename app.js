@@ -56,6 +56,7 @@ User.hasMany(Order);
 Order.belongsToMany(Product, { through: OrderItem });
 
 // lesson 12 - maybe in the future
+// lesson 13 - maybe in the future
 
 sequelize
   // .sync({ force: true }) // force: true - drop all tables and recreate them
