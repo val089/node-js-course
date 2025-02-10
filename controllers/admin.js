@@ -1,5 +1,4 @@
 const Product = require('../models/product');
-const mongodb = require('mongodb');
 
 exports.getAddProduct = (req, res, next) => {
   res.render('admin/edit-product', {
@@ -15,14 +14,13 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
 
-  const product = new Product(
+  const product = new Product({
     title,
     imageUrl,
     description,
     price,
-    null,
-    req.user._id
-  );
+    userId: req.user._id
+  });
 
   product
     .save()
@@ -63,17 +61,15 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedDescription = req.body.description;
 
-  const product = new Product(
-    updatedTitle,
-    updatedImageUrl,
-    updatedDescription,
-    updatedPrice,
-    productId
-  );
-
-  product
-    .save(product)
-    .then((result) => {
+  Product.findById(productId)
+    .then((product) => {
+      product.title = updatedTitle;
+      product.imageUrl = updatedImageUrl;
+      product.price = updatedPrice;
+      product.description = updatedDescription;
+      return product.save();
+    })
+    .then(() => {
       console.log('UPDATED PRODUCT!');
       res.redirect('/admin/products');
     })
@@ -81,8 +77,11 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
+    //  .select('title price -_id') // wyświetla tylko wybrane pola
+    .populate('userId', 'name') // wyświetla dane z innych kolekcji (w tym przypadku z kolekcji users)
     .then((products) => {
+      console.log(products);
       res.render('admin/products', {
         products,
         pageTitle: 'Admin Products',
@@ -94,7 +93,7 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-  Product.deleteById(productId)
+  Product.findByIdAndDelete(productId)
     .then(() => res.redirect('/admin/products'))
     .catch((err) => console.log(err));
 };

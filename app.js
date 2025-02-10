@@ -2,9 +2,9 @@ const path = require('path');
 
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const errorController = require('./controllers/error');
-const mongoConnect = require('./util/database').mongoConnect;
 const User = require('./models/user');
 
 const app = express();
@@ -23,9 +23,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
-  User.findById('6751e5b558c6fafbe59fb0d0')
+  User.findById('678e86d8f2535e4b0bb3c603')
     .then((user) => {
-      req.user = new User(user.name, user.email, user.cart, user._id);
+      req.user = user;
       // continue next step
       next();
     })
@@ -40,8 +40,26 @@ app.use(shopRoutes);
 
 app.use(errorController.get404);
 
-mongoConnect(() => {
-  app.listen(3000);
-});
+mongoose
+  .connect(
+    'mongodb+srv://kamilszerlag:qQLIRtav22NKoan2@cluster-nodejs.eeutf.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster-NodeJS'
+  )
+  .then((result) => {
+    User.findOne().then((user) => {
+      if (!user) {
+        const user = new User({
+          name: 'Kamil',
+          email: 'kamil@wp.pl',
+          cart: {
+            items: []
+          }
+        });
+        user.save();
+      }
+    });
 
-// mongoConnect();
+    app.listen(3000);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
