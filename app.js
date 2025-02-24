@@ -3,11 +3,24 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
 
+// const MONGODB_URI =
+//   'mongodb+srv://kamilszerlag:qQLIRtav22NKoan2@cluster-nodejs.eeutf.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster-NodeJS';
+
+const MONGODB_URI =
+  'mongodb+srv://kamilszerlag:qQLIRtav22NKoan2@cluster-nodejs.eeutf.mongodb.net/shop?&w=majority&appName=Cluster-NodeJS';
+
 const app = express();
+const store = new MongoDBStore({
+  uri: MONGODB_URI,
+  collection: 'sessions'
+  // expires: 1000 * 60 * 60 * 2 // 2 hours // i can add expires option to delete old sessions from db
+});
 
 // set global configuration for the view engine
 // pug engine is used to render the views
@@ -18,32 +31,46 @@ app.set('views', 'views');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const authRoutes = require('./routes/auth');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// session initialization
+app.use(
+  session({
+    secret: 'my secret',
+    resave: false,
+    saveUninitialized: false,
+    store // here will be session store in db
+  })
+);
+
 app.use((req, res, next) => {
-  User.findById('678e86d8f2535e4b0bb3c603')
+  if (!req.session.user) {
+    // if we don't have user go to next middleware
+    return next();
+  }
+
+  User.findById(req.session.user._id)
     .then((user) => {
+      // we set user from db to session and thanks to that we can use all methods from user model (moongose)
       req.user = user;
-      // continue next step
       next();
     })
     .catch((err) => {
       console.log(err);
-      // next(err);
     });
 });
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(errorController.get404);
 
 mongoose
-  .connect(
-    'mongodb+srv://kamilszerlag:qQLIRtav22NKoan2@cluster-nodejs.eeutf.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster-NodeJS'
-  )
+  .connect(MONGODB_URI)
   .then((result) => {
     User.findOne().then((user) => {
       if (!user) {

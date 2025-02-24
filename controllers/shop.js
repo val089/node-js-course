@@ -7,7 +7,8 @@ exports.getProducts = (req, res, next) => {
       res.render('shop/product-list', {
         products,
         pageTitle: 'All products',
-        path: '/products'
+        path: '/products',
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch((err) => console.log(err));
@@ -20,7 +21,8 @@ exports.getProduct = (req, res, next) => {
       res.render('shop/product-details', {
         product,
         pageTitle: product.title,
-        path: '/products'
+        path: '/products',
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch((err) => console.log(err));
@@ -29,11 +31,13 @@ exports.getProduct = (req, res, next) => {
 exports.getIndex = (req, res, next) => {
   Product.find()
     .then((products) => {
-      console.log(products);
+      // console.log(products);
+      // jest to zupełnie nowa prośba o renderowanie strony; całkowicie niezależna od poprzednich zapytań
       res.render('shop/index', {
         products,
         pageTitle: 'Shop',
-        path: '/'
+        path: '/',
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch((err) => console.log(err));
@@ -49,7 +53,8 @@ exports.getCart = (req, res, next) => {
       res.render('shop/cart', {
         path: '/cart',
         pageTitle: 'Your Cart',
-        products
+        products,
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch((error) => console.log(error));
@@ -80,7 +85,8 @@ exports.postCartDeleteProduct = (req, res, next) => {
 exports.getCheckout = (req, res, next) => {
   res.render('shop/checkout', {
     path: '/checkout',
-    pageTitle: 'Checkout'
+    pageTitle: 'Checkout',
+    isAuthenticated: req.session.isLoggedIn
   });
 };
 
@@ -117,7 +123,8 @@ exports.getOrders = (req, res, next) => {
       res.render('shop/orders', {
         path: '/orders',
         pageTitle: 'Your orders',
-        orders
+        orders,
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch((error) => console.log(error));
