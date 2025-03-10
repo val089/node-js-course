@@ -1,37 +1,106 @@
+const bcrypt = require('bcryptjs');
+
 const User = require('../models/user');
 
 exports.getLogin = (req, res, next) => {
-  console.log('req.session.isLoggedIn', req.session.isLoggedIn);
+  let message = req.flash('error');
+
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+
   res.render('auth/login', {
     path: '/login',
     pageTitle: 'Login page',
-    isAuthenticated: req.session.isLoggedIn
+    errorMessage: message
+  });
+};
+
+exports.getSignup = (req, res, next) => {
+  let message = req.flash('error');
+
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+
+  res.render('auth/signup', {
+    path: '/signup',
+    pageTitle: 'Signup',
+    errorMessage: message
   });
 };
 
 exports.postLogin = (req, res, next) => {
-  // w ten sposób te dane nie są gromadzone; te dane są tracone po przekazaniu odpowiedzi
-  // req is dead after sending res-response; better way is to use cookies or sessions
-  // req.isLoggedIn = true;
+  const email = req.body.email;
+  const password = req.body.password;
 
-  // Available options:
-  // res.setHeader('Set-Cookie', 'loggedIn=true; Expiress='); for setting expiration date
-  // res.setHeader('Set-Cookie', 'loggedIn=true; Max-Age=10'); for setting max age
-  // res.setHeader('Set-Cookie', 'loggedIn=true; Domain='); for setting domain
-  // res.setHeader('Set-Cookie', 'loggedIn=true; Secure'); for https
-  // res.setHeader('Set-Cookie', 'loggedIn=true; httpOnly'); for not allowing js to access cookie
-
-  // res.setHeader('Set-Cookie', 'loggedIn=true');
-
-  User.findById('678e86d8f2535e4b0bb3c603')
+  User.findOne({ email })
     .then((user) => {
-      req.session.isLoggedIn = true;
-      req.session.user = user;
-      req.session.save((err) => {
-        // redirecting after saving session
-        console.log(err);
-        res.redirect('/');
-      });
+      if (!user) {
+        req.flash('error', 'Invalid email or password');
+        return res.redirect('/login');
+      }
+
+      bcrypt
+        .compare(password, user.password)
+        .then((doMatch) => {
+          if (doMatch) {
+            req.session.isLoggedIn = true;
+            req.session.user = user;
+            return req.session.save((err) => {
+              res.redirect('/');
+            });
+          }
+
+          req.flash('error', 'Invalid email or password');
+          res.redirect('/login');
+        })
+        .catch((err) => {
+          console.log(err);
+          res.redirect('/login');
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+exports.postSignup = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const confirmPassword = req.body.confirmPassword;
+
+  User.findOne({
+    email
+  })
+    .then((userDoc) => {
+      if (userDoc) {
+        req.flash('error', 'Email already exists. Please use another email.');
+        return res.redirect('/signup');
+      }
+
+      // 12 - number of rounds for hashing, is highly secure
+      return bcrypt
+        .hash(password, 12)
+        .then((hashedPassword) => {
+          const user = new User({
+            email,
+            password: hashedPassword,
+            cart: { items: [] }
+          });
+
+          return user.save();
+        })
+        .then(() => {
+          res.redirect('/login');
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     })
     .catch((err) => {
       console.log(err);
