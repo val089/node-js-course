@@ -13,9 +13,7 @@ const User = require('../models/user');
 // );
 
 const sendgridMail = require('@sendgrid/mail');
-sendgridMail.setApiKey(
-  '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'
-);
+sendgridMail.setApiKey('');
 
 exports.getLogin = (req, res, next) => {
   let message = req.flash('error');
