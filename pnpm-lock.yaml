@@ -26,6 +26,9 @@ importers:
       csurf:
         specifier: ^1.11.0
         version: 1.11.0
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.4.7
       express:
         specifier: ^4.16.3
         version: 4.19.2
@@ -621,6 +624,10 @@ packages:
   dot-prop@4.2.1:
     resolution: {integrity: sha512-l0p4+mIuJIua0mhxGoh4a+iNL9bmeK5DvnSVQa6T0OhrVmaEa1XScX5Etc673FePCJOArq/4Pa2cLGODUWTPOQ==}
     engines: {node: '>=4'}
+
+  dotenv@16.4.7:
+    resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
+    engines: {node: '>=12'}
 
   dottie@2.0.6:
     resolution: {integrity: sha512-iGCHkfUc5kFekGiqhe8B/mdaurD+lakO9txNnTvKtA6PISrw86LgqHvRzWYPyoE2Ph5aMIrCw9/uko6XHTKCwA==}
@@ -2791,6 +2798,8 @@ snapshots:
   dot-prop@4.2.1:
     dependencies:
       is-obj: 1.0.1
+
+  dotenv@16.4.7: {}
 
   dottie@2.0.6: {}
 

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const path = require('path');
 
 const express = require('express');
@@ -11,11 +12,11 @@ const flash = require('connect-flash');
 const errorController = require('./controllers/error');
 const User = require('./models/user');
 
-// const MONGODB_URI =
-//   'mongodb+srv://kamilszerlag:qQLIRtav22NKoan2@cluster-nodejs.eeutf.mongodb.net/shop?retryWrites=true&w=majority&appName=Cluster-NodeJS';
+if (!process.env.MONGODB_URI) {
+  throw new Error('MONGODB_URI is not set');
+}
 
-const MONGODB_URI =
-  'mongodb+srv://kamilszerlag:qQLIRtav22NKoan2@cluster-nodejs.eeutf.mongodb.net/shop?&w=majority&appName=Cluster-NodeJS';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 const app = express();
 const store = new MongoDBStore({

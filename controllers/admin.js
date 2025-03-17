@@ -63,6 +63,11 @@ exports.postEditProduct = (req, res, next) => {
 
   Product.findById(productId)
     .then((product) => {
+      // check if the product belongs to the user, block editing if not
+      if (product.userId.toString() !== req.user._id.toString()) {
+        return res.redirect('/');
+      }
+
       product.title = updatedTitle;
       product.imageUrl = updatedImageUrl;
       product.price = updatedPrice;
@@ -77,7 +82,8 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  // filter products by userId
+  Product.find({ userId: req.user._id })
     //  .select('title price -_id') // wyświetla tylko wybrane pola
     // .populate('userId', 'name') // wyświetla dane z innych kolekcji (w tym przypadku z kolekcji users)
     .then((products) => {
@@ -93,7 +99,7 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-  Product.findByIdAndDelete(productId)
+  Product.deleteOne({ _id: productId, userId: req.user._id })
     .then(() => {
       console.log('DESTROYED PRODUCT');
       res.redirect('/admin/products');
