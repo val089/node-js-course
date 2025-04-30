@@ -8,6 +8,7 @@ const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf');
 const flash = require('connect-flash');
+const multer = require('multer'); // multer is a middleware for handling multipart/form-data, which is used for uploading files,it is executed on every incoming request and if sees that the request is a file upload, it will handle it
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
@@ -24,7 +25,29 @@ const store = new MongoDBStore({
   collection: 'sessions'
   // expires: 1000 * 60 * 60 * 2 // 2 hours // i can add expires option to delete old sessions from db
 });
-const csrfProtection = csrf({});
+const csrfProtection = csrf();
+
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  // reject a file
+  if (
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg'
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
 
 // set global configuration for the view engine
 // pug engine is used to render the views
@@ -37,8 +60,12 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 
+// urlencoded słuy do parsowania formularzy aby móc je odczytać
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(multer({ storage: fileStorage, fileFilter }).single('image')); // single - one file, image - name of the file in the form
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 // session initialization
 app.use(
   session({
