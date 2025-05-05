@@ -1,0 +1,1 @@
+files in public folder will run on the client side not on the server
