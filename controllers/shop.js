@@ -150,6 +150,31 @@ exports.getCheckout = (req, res, next) => {
   });
 };
 
+exports.getCheckout = (req, res, next) => {
+  req.user
+    .populate(['cart.items.productId'])
+    .then((user) => {
+      const products = user.cart.items;
+
+      let totalSum = 0;
+      products.forEach((p) => {
+        totalSum += p.quantity * p.productId.price;
+      });
+
+      res.render('shop/checkout', {
+        path: '/checkout',
+        pageTitle: 'Checkout',
+        products,
+        totalSum
+      });
+    })
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error); // dzęki next kod będzie wykonywany dalej
+    });
+};
+
 exports.postOrder = (req, res, next) => {
   req.user
     .populate(['cart.items.productId'])
